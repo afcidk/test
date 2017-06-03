@@ -124,7 +124,7 @@ void mainwindow::prepareStart()
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(startSession()));
-    timer->start(50);
+    timer->start(1);
 }
 
 void mainwindow::readMessage()
