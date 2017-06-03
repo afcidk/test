@@ -76,7 +76,6 @@ void mainwindow::startSession()
         qDebug()<<"host sending....";
         hostBox->hide();
         sessionBox->show();
-        clientConnection->abort();
         clientConnection = tcpServer->nextPendingConnection();
         connect(clientConnection, SIGNAL(readyRead()), this, SLOT(readMessage()));
 
@@ -143,6 +142,12 @@ void mainwindow::readMessage()
 
     message->setText(message->toPlainText() + '\n' + data);
 
-    if(character == "host") disconnect(clientConnection, SIGNAL(readyRead()), this, SLOT(readMessage()));
-    else disconnect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readMessage()));
+    if(character == "host"){
+       disconnect(clientConnection, SIGNAL(readyRead()), this, SLOT(readMessage()));
+       clientConnection->disconnectFromHost();
+    }
+    else{
+        tcpSocket->abort();
+        disconnect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readMessage()));
+    }
 }
