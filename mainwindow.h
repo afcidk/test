@@ -50,7 +50,7 @@ private:
     QString character;
     QTcpServer *tcpServer;
     QTcpSocket *tcpSocket;
-    QTcpSocket *receive;
+    QTcpSocket *clientConnection;
 
 private slots:
     void hostPart();

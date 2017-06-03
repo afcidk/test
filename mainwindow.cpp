@@ -76,9 +76,8 @@ void mainwindow::startSession()
         qDebug()<<"host sending....";
         hostBox->hide();
         sessionBox->show();
-        QTcpSocket *clientConnection = tcpServer->nextPendingConnection();
-        receive = clientConnection;
-        connect(receive, SIGNAL(readyRead()), this, SLOT(readMessage()));
+        clientConnection = tcpServer->nextPendingConnection();
+        connect(clientConnection, SIGNAL(readyRead()), this, SLOT(readMessage()));
 
         //datas
         QByteArray data;
@@ -95,17 +94,18 @@ void mainwindow::startSession()
 
         tcpSocket->abort();
         tcpSocket->connectToHost(host, port);
-        receive->connectToHost(host, port);
-        connect(receive, SIGNAL(readyRead()), this, SLOT(readMessage()));
+        connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readMessage()));
         QByteArray data;
         QDataStream stream(&data, QIODevice::WriteOnly);
-        stream.setDevice(receive);
+        stream.setDevice(tcpSocket);
         stream.setVersion(QDataStream::Qt_5_7);
 
         stream<<"hi_world";
 
-        receive->write(data);
-        receive->abort();
+        qDebug()<<tcpSocket->state();
+        tcpSocket->write(data);
+        connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readMessage()));
+        tcpSocket->abort();
     }
 }
 
@@ -136,8 +136,8 @@ void mainwindow::readMessage()
 {
     QDataStream in;
 
-    in.setDevice(receive);
-    disconnect(receive, SIGNAL(readyRead()), this, SLOT(readMessage()));
+    if(character == "host") in.setDevice(clientConnection);
+    else in.setDevice(tcpSocket);
 
     in.startTransaction();
     QString data;
