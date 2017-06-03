@@ -25,6 +25,9 @@ mainwindow::mainwindow(QWidget *parent) :
     hostBox->hide();
     sessionBox->hide();
 
+    tcpServer = new QTcpServer(this);
+    receiveSocket = new QTcpSocket(this);
+
     connect(hostBtn, SIGNAL(clicked()), this, SLOT(hostPart()));
     connect(clientBtn, SIGNAL(clicked()), this, SLOT(clientPart()));
 }
@@ -36,7 +39,6 @@ mainwindow::~mainwindow()
 
 void mainwindow::hostPart()
 {
-    QTcpServer *tcpServer = new QTcpServer();
 
     tcpServer->listen();
     QList<QHostAddress> ipList = QNetworkInterface::allAddresses();
@@ -84,26 +86,18 @@ void mainwindow::startSession()
         clientConnection->disconnectFromHost();
     }
     else if(character == "client"){
-        QTcpSocket *tcpSocket = new QTcpSocket;
 
-        tcpSocket->connectToHost(host, port);
+        receiveSocket->connectToHost(host, port);
         QByteArray data;
         QDataStream stream(&data, QIODevice::WriteOnly);
+        stream.setDevice(receiveSocket);
         stream.setVersion(QDataStream::Qt_5_7);
 
         stream<<"hi_world";
 
-        tcpSocket->write(data);
-        tcpSocket->abort();
+        receiveSocket->write(data);
+        receiveSocket->abort();
     }
-
-    QDataStream in;
-    in.startTransaction();
-    QString data;
-    in>>data;
-
-    message->setText(message->toPlainText() + '\n' + data);
-
 }
 
 void mainwindow::backToMenu()
@@ -124,6 +118,17 @@ void mainwindow::prepareStart()
     port = portEdit->text().toInt();
 
     QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SIGNAL(startSession()));
+    connect(timer, SIGNAL(timeout()), this, SLOT(startSession()));
+    connect(receiveSocket, SIGNAL(readyRead()), this, SLOT(readMessage()));
     timer->start(50);
+}
+
+void mainwindow::readMessage()
+{
+    QDataStream in;
+    in.startTransaction();
+    QString data;
+    in>>data;
+
+    message->setText(message->toPlainText() + '\n' + data);
 }

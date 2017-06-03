@@ -49,6 +49,7 @@ private:
 
     QString character;
     QTcpServer *tcpServer;
+    QTcpSocket *receiveSocket;
 
 private slots:
     void hostPart();
@@ -56,6 +57,7 @@ private slots:
     void startSession();
     void backToMenu();
     void prepareStart();
+    void readMessage();
 
 };
 
