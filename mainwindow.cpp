@@ -64,6 +64,7 @@ void mainwindow::clientPart()
 {
     startBox->hide();
     clientBox->show();
+    ipEdit->setFocus();
     connect(clientBack, SIGNAL(clicked()), this, SLOT(backToMenu()));
     connect(clientStart, SIGNAL(clicked()), this, SLOT(prepareStart()));
     character = "client";
@@ -76,7 +77,7 @@ void mainwindow::startSession()
         hostBox->hide();
         sessionBox->show();
         QTcpSocket *clientConnection = tcpServer->nextPendingConnection();
-        readMessage();
+        connect(clientConnection, SIGNAL(readyRead()), this, SLOT(readMessage(QTcpSocket)));
 
         //datas
         QByteArray data;
@@ -93,6 +94,7 @@ void mainwindow::startSession()
 
         tcpSocket->abort();
         tcpSocket->connectToHost(host, port);
+        connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readMessage()));
         QByteArray data;
         QDataStream stream(&data, QIODevice::WriteOnly);
         stream.setDevice(tcpSocket);
@@ -102,7 +104,7 @@ void mainwindow::startSession()
 
         qDebug()<<tcpSocket->state();
         tcpSocket->write(data);
-        connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readMessage()));
+        connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readMessage(tcpSocket)));
         tcpSocket->abort();
     }
 }
@@ -130,10 +132,10 @@ void mainwindow::prepareStart()
     timer->start(1);
 }
 
-void mainwindow::readMessage()
+void mainwindow::readMessage(QTcpSocket *socket)
 {
     qDebug()<<"new message came in!";
-    QDataStream in;
+    QDataStream in(socket);
     in.startTransaction();
     QString data;
     in>>data;

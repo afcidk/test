@@ -57,7 +57,7 @@ private slots:
     void startSession();
     void backToMenu();
     void prepareStart();
-    void readMessage();
+    void readMessage(QTcpSocket *socket);
 
 };
 
