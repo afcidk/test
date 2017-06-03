@@ -86,7 +86,7 @@ void mainwindow::startSession()
         stream<<"hello world!\n";        
 
         connect(clientConnection, SIGNAL(disconnected()), clientConnection, SLOT(deleteLater()));
-        clientConnection->write(data);
+        qDebug()<<"write : "<<clientConnection->write(data);
         clientConnection->disconnectFromHost();
     }
     else if(character == "client"){
@@ -101,7 +101,7 @@ void mainwindow::startSession()
         stream.setVersion(QDataStream::Qt_5_7);
         stream<<"hi world";
 
-        tcpSocket->write(data);
+        qDebug()<<"write: "<<tcpSocket->write(data);
         tcpSocket->abort();
     }
 }
