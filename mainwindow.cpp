@@ -30,6 +30,7 @@ mainwindow::mainwindow(QWidget *parent) :
 
     connect(hostBtn, SIGNAL(clicked()), this, SLOT(hostPart()));
     connect(clientBtn, SIGNAL(clicked()), this, SLOT(clientPart()));
+    connect(receiveSocket, SIGNAL(readyRead()), this, SLOT(readMessage()));
 }
 
 mainwindow::~mainwindow()
@@ -73,6 +74,8 @@ void mainwindow::startSession()
 
     if(character == "host"){
 
+        hostBox->hide();
+        sessionBox->show();
         QTcpSocket *clientConnection = tcpServer->nextPendingConnection();
 
         //datas
@@ -105,6 +108,7 @@ void mainwindow::backToMenu()
     startBox->show();
     clientBox->hide();
     hostBox->hide();
+    tcpServer->close();
 }
 
 void mainwindow::prepareStart()
@@ -119,12 +123,12 @@ void mainwindow::prepareStart()
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(startSession()));
-    connect(receiveSocket, SIGNAL(readyRead()), this, SLOT(readMessage()));
     timer->start(50);
 }
 
 void mainwindow::readMessage()
 {
+    qDebug()<<"new message came in!";
     QDataStream in;
     in.startTransaction();
     QString data;
