@@ -26,10 +26,11 @@ mainwindow::mainwindow(QWidget *parent) :
     sessionBox->hide();
 
     tcpServer = new QTcpServer(this);
-    receiveSocket = new QTcpSocket(this);
+    tcpSocket = new QTcpSocket(this);
 
     connect(hostBtn, SIGNAL(clicked()), this, SLOT(hostPart()));
     connect(clientBtn, SIGNAL(clicked()), this, SLOT(clientPart()));
+
 }
 
 mainwindow::~mainwindow()
@@ -50,11 +51,11 @@ void mainwindow::hostPart()
 
     status->setText(status->text() + "\nport : " + QString::number(tcpServer->serverPort()) + '\n');
 
-
-
     startBox->hide();
     hostBox->show();
     connect(hostBack, SIGNAL(clicked()), this, SLOT(backToMenu()));
+
+
     connect(tcpServer, SIGNAL(newConnection()), this, SLOT(startSession()));
     character = "host";
 }
@@ -70,9 +71,8 @@ void mainwindow::clientPart()
 
 void mainwindow::startSession()
 {
-    qDebug()<<"sending....";
     if(character == "host"){
-
+        qDebug()<<"host sending....";
         hostBox->hide();
         sessionBox->show();
         QTcpSocket *clientConnection = tcpServer->nextPendingConnection();
@@ -81,7 +81,7 @@ void mainwindow::startSession()
         QByteArray data;
         QDataStream stream(&data, QIODevice::WriteOnly);
         stream.setVersion(QDataStream::Qt_5_7);
-        stream<<"hello world!\n";
+        stream<<"hello world!\n";        
 
         connect(clientConnection, SIGNAL(disconnected()), clientConnection, SLOT(deleteLater()));
         clientConnection->write(data);
@@ -89,18 +89,20 @@ void mainwindow::startSession()
         clientConnection->disconnectFromHost();
     }
     else if(character == "client"){
+        qDebug()<<"client sending....";
 
-        receiveSocket->connectToHost(host, port);
+        tcpSocket->connectToHost(host, port);
         QByteArray data;
         QDataStream stream(&data, QIODevice::WriteOnly);
-        stream.setDevice(receiveSocket);
+        stream.setDevice(tcpSocket);
         stream.setVersion(QDataStream::Qt_5_7);
 
         stream<<"hi_world";
 
-        receiveSocket->write(data);
-        connect(receiveSocket, SIGNAL(readyRead()), this, SLOT(readMessage()));
-        receiveSocket->abort();
+        qDebug()<<tcpSocket->state();
+        tcpSocket->write(data);
+        connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readMessage()));
+        tcpSocket->abort();
     }
 }
 
@@ -124,7 +126,7 @@ void mainwindow::prepareStart()
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(startSession()));
-    timer->start(1);
+    timer->start(50);
 }
 
 void mainwindow::readMessage()
