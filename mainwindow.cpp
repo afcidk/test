@@ -30,7 +30,6 @@ mainwindow::mainwindow(QWidget *parent) :
 
     connect(hostBtn, SIGNAL(clicked()), this, SLOT(hostPart()));
     connect(clientBtn, SIGNAL(clicked()), this, SLOT(clientPart()));
-    connect(receiveSocket, SIGNAL(readyRead()), this, SLOT(readMessage()));
 }
 
 mainwindow::~mainwindow()
@@ -71,7 +70,7 @@ void mainwindow::clientPart()
 
 void mainwindow::startSession()
 {
-
+    qDebug()<<"sending....";
     if(character == "host"){
 
         hostBox->hide();
@@ -86,6 +85,7 @@ void mainwindow::startSession()
 
         connect(clientConnection, SIGNAL(disconnected()), clientConnection, SLOT(deleteLater()));
         clientConnection->write(data);
+        connect(clientConnection, SIGNAL(readyRead()), this, SLOT(readMessage()));
         clientConnection->disconnectFromHost();
     }
     else if(character == "client"){
@@ -99,6 +99,7 @@ void mainwindow::startSession()
         stream<<"hi_world";
 
         receiveSocket->write(data);
+        connect(receiveSocket, SIGNAL(readyRead()), this, SLOT(readMessage()));
         receiveSocket->abort();
     }
 }
