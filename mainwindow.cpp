@@ -95,16 +95,13 @@ void mainwindow::startSession()
         tcpSocket->abort();
         tcpSocket->connectToHost(host, port);
         connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readMessage()));
+
         QByteArray data;
         QDataStream stream(&data, QIODevice::WriteOnly);
-        stream.setDevice(tcpSocket);
         stream.setVersion(QDataStream::Qt_5_7);
+        stream<<"hi world";
 
-        stream<<"hi_world";
-
-        qDebug()<<tcpSocket->state();
         tcpSocket->write(data);
-        connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readMessage()));
         tcpSocket->abort();
     }
 }
@@ -134,6 +131,7 @@ void mainwindow::prepareStart()
 
 void mainwindow::readMessage()
 {
+    qDebug()<<"new message came in!";
     QDataStream in;
 
     if(character == "host") in.setDevice(clientConnection);
@@ -142,7 +140,6 @@ void mainwindow::readMessage()
     in.startTransaction();
     QString data;
     in>>data;
-    qDebug()<<"new message came in!";
 
     message->setText(message->toPlainText() + '\n' + data);
 }

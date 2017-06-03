@@ -51,6 +51,7 @@ private:
     QTcpServer *tcpServer;
     QTcpSocket *tcpSocket;
     QTcpSocket *clientConnection;
+    QTcpSocket *receive;
 
 private slots:
     void hostPart();
