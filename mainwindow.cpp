@@ -76,6 +76,7 @@ void mainwindow::startSession()
         hostBox->hide();
         sessionBox->show();
         QTcpSocket *clientConnection = tcpServer->nextPendingConnection();
+        readMessage();
 
         //datas
         QByteArray data;
@@ -85,12 +86,12 @@ void mainwindow::startSession()
 
         connect(clientConnection, SIGNAL(disconnected()), clientConnection, SLOT(deleteLater()));
         clientConnection->write(data);
-        connect(clientConnection, SIGNAL(readyRead()), this, SLOT(readMessage()));
         clientConnection->disconnectFromHost();
     }
     else if(character == "client"){
         qDebug()<<"client sending....";
 
+        tcpSocket->abort();
         tcpSocket->connectToHost(host, port);
         QByteArray data;
         QDataStream stream(&data, QIODevice::WriteOnly);
@@ -126,7 +127,7 @@ void mainwindow::prepareStart()
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(startSession()));
-    timer->start(50);
+    timer->start(1);
 }
 
 void mainwindow::readMessage()
