@@ -76,8 +76,8 @@ void mainwindow::startSession()
         qDebug()<<"host sending....";
         hostBox->hide();
         sessionBox->show();
-        QTcpSocket *clientConnection = tcpServer->nextPendingConnection();
-        connect(clientConnection, SIGNAL(readyRead()), this, SLOT(readMessage(QTcpSocket)));
+        tcpSocket = tcpServer->nextPendingConnection();
+        connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readMessage()));
 
         //datas
         QByteArray data;
@@ -104,7 +104,7 @@ void mainwindow::startSession()
 
         qDebug()<<tcpSocket->state();
         tcpSocket->write(data);
-        connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readMessage(tcpSocket)));
+        connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readMessage()));
         tcpSocket->abort();
     }
 }
@@ -132,10 +132,12 @@ void mainwindow::prepareStart()
     timer->start(1);
 }
 
-void mainwindow::readMessage(QTcpSocket *socket)
+void mainwindow::readMessage()
 {
     qDebug()<<"new message came in!";
-    QDataStream in(socket);
+    QDataStream in;
+    in.setDevice(tcpSocket);
+
     in.startTransaction();
     QString data;
     in>>data;
